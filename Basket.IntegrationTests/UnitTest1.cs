@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -10,7 +9,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
-namespace Basket.Tests
+namespace Basket.IntegrationTests
 {
     public class UnitTest1 : IAsyncLifetime
     {
@@ -31,7 +30,7 @@ namespace Basket.Tests
             
             for (var i = 0; i < 30; i++)
             {
-                var order = NewOrder();
+                var order = Generator.NewOrder();
                 var messages = new []
                 {
                     CreateMessage(order, "OrderCreated"), 
@@ -96,41 +95,10 @@ namespace Basket.Tests
                 Subject = type
             };
 
-        private static Order NewOrder()
-        {
-            var item = new Faker<Item>()
-                .StrictMode(true)
-                .RuleFor(i => i.Name, f => f.Commerce.Product())
-                .RuleFor(i => i.Quantity, f => f.Random.Number(10))
-                .RuleFor(i => i.Price, f => 0.01m * f.Random.Number(10, 3000));
-
-            var order = new Faker<Order>()
-                .StrictMode(true)
-                .RuleFor(x => x.Id, f => f.UniqueIndex)
-                .RuleFor(x => x.Email, f => f.Internet.Email())
-                .RuleFor(x => x.Items, f => item.Generate(5));
-
-            return order.Generate();
-        }
-
         public async Task InitializeAsync()
         {
         }
 
         public async Task DisposeAsync() => await _bus.DisposeAsync();
-    }
-
-    public class Order
-    {
-        public int Id { get; set; }
-        public string Email { get; set; }
-        public IEnumerable<Item> Items { get; set; }
-    }
-
-    public class Item
-    {
-        public string Name { get; set; }
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
     }
 }
