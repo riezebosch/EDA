@@ -55,12 +55,12 @@ namespace Basket.ServiceBusAdapters.IntegrationTests
                 ScheduledEnqueueTime = schedule
             });
 
-            var done = new TaskCompletionSource();
+            var done = new TaskCompletionSource<ServiceBusReceivedMessage>();
             await using var reader = _bus.CreateProcessor("Orders", "a", new ServiceBusProcessorOptions());
             reader.ProcessMessageAsync += e => 
             {
                 if (e.Message.Body.ToString() == input)
-                    done.SetResult();
+                    done.SetResult(e.Message);
 
                 return Task.CompletedTask;
             };
@@ -70,7 +70,7 @@ namespace Basket.ServiceBusAdapters.IntegrationTests
             await reader.StartProcessingAsync();
             using var tcs = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             var token = tcs.Token;
-            token.Register(() => done.SetCanceled(token));
+            token.Register(() => done.SetCanceled());
 
             await done.Task;
             DateTime.UtcNow.Should().BeAfter(schedule);

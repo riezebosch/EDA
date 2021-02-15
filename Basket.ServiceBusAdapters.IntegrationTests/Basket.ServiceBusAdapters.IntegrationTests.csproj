@@ -2,9 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-
+        <LangVersion>LATEST</LangVersion>
         <IsPackable>false</IsPackable>
-      <UserSecretsId>e3c70d3d-77e2-4025-8fee-f78134c761e7</UserSecretsId>
+        <UserSecretsId>e3c70d3d-77e2-4025-8fee-f78134c761e7</UserSecretsId>
   </PropertyGroup>
 
     <ItemGroup>
@@ -24,5 +24,9 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Basket.ServiceBusAdapters\Basket.ServiceBusAdapters.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="README.md" />
     </ItemGroup>
 </Project>
