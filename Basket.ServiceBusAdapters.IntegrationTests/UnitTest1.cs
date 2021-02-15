@@ -4,12 +4,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
-using Bogus;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
-namespace Basket.IntegrationTests
+namespace Basket.ServiceBusAdapters.IntegrationTests
 {
     public class UnitTest1 : IAsyncLifetime
     {
@@ -66,7 +65,7 @@ namespace Basket.IntegrationTests
                 return Task.CompletedTask;
             };
 
-            reader.ProcessErrorAsync += e => Task.CompletedTask;
+            reader.ProcessErrorAsync += _ => Task.CompletedTask;
 
             await reader.StartProcessingAsync();
             using var tcs = new CancellationTokenSource(TimeSpan.FromMinutes(5));
@@ -95,9 +94,7 @@ namespace Basket.IntegrationTests
                 Subject = type
             };
 
-        public async Task InitializeAsync()
-        {
-        }
+        public Task InitializeAsync() => Task.CompletedTask;
 
         public async Task DisposeAsync() => await _bus.DisposeAsync();
     }

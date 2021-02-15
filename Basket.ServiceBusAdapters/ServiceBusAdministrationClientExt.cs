@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus.Administration;
 
-namespace Basket.IntegrationTests
+namespace Basket.ServiceBusAdapters
 {
-    internal static class ServiceBusAdministrationClientExt
+    public static class ServiceBusAdministrationClientExt
     {
         public static async Task Setup(this ServiceBusAdministrationClient admin, string topic, string subscription, string @event)
         {

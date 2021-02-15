@@ -23,7 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Basket\Basket.csproj" />
+      <ProjectReference Include="..\Basket.ServiceBusAdapters\Basket.ServiceBusAdapters.csproj" />
     </ItemGroup>
-
 </Project>

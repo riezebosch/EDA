@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Concurrent;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
-using Basket.Commands;
 using Basket.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
-namespace Basket.IntegrationTests
+namespace Basket.ServiceBusAdapters.IntegrationTests
 {
     public class ServiceATests : IAsyncLifetime
     {
@@ -31,7 +29,7 @@ namespace Basket.IntegrationTests
         public async Task Test()
         {
             await using var sender = _bus.CreateSender("orders");
-            var publisher = new ServiceBusPublisher(sender); 
+            var publisher = new Publisher(sender); 
             
             await _admin.Setup("orders", "ServiceA", "CreateOrder");
             await using var processor = _bus.CreateProcessor("orders", "ServiceA").Hookup(new ServiceA(publisher));
@@ -43,7 +41,7 @@ namespace Basket.IntegrationTests
             using var results = new BlockingCollection<ServiceBusReceivedMessage>();
 
             test.ProcessMessageAsync += async e => results.Add(e.Message);
-            test.ProcessErrorAsync += e => Task.CompletedTask;
+            test.ProcessErrorAsync += _ => Task.CompletedTask;
             await test.StartProcessingAsync();
             
             await publisher.Publish( "CreateOrder", Generator.NewOrder(), DateTimeOffset.UtcNow);
@@ -55,22 +53,5 @@ namespace Basket.IntegrationTests
         public Task InitializeAsync() => Task.CompletedTask;
 
         public async Task DisposeAsync() => await _bus.DisposeAsync();
-    }
-
-    public class ServiceBusPublisher : IPublisher
-    {
-        private readonly ServiceBusSender _sender;
-
-        public ServiceBusPublisher(ServiceBusSender sender) => 
-            _sender = sender;
-
-        public async Task Publish(string @event, object body, DateTimeOffset schedule)
-        {
-            await _sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(body))
-            {
-                Subject = @event, 
-                ScheduledEnqueueTime = schedule
-            });
-        }
     }
 }

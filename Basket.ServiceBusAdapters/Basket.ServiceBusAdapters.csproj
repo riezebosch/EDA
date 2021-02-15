@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.0.1" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Basket\Basket.csproj" />
+    </ItemGroup>
+</Project>

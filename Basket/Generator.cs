@@ -1,5 +1,4 @@
 using Basket.Commands;
-using Basket.Events;
 using Bogus;
 
 namespace Basket
@@ -18,7 +17,7 @@ namespace Basket
                 .StrictMode(true)
                 .RuleFor(x => x.Id, f => f.UniqueIndex)
                 .RuleFor(x => x.Email, f => f.Internet.Email())
-                .RuleFor(x => x.Items, f => item.Generate(5));
+                .RuleFor(x => x.Items, _ => item.Generate(5));
 
             return order.Generate();
         }

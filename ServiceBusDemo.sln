@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basket", "Basket\Basket.csproj", "{307C3BDE-15FB-4E6C-B1E2-347BF572F78B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basket.IntegrationTests", "Basket.IntegrationTests\Basket.IntegrationTests.csproj", "{07B3A4EA-33CC-4A2B-9BCA-3404AFBD82AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basket.ServiceBusAdapters.IntegrationTests", "Basket.ServiceBusAdapters.IntegrationTests\Basket.ServiceBusAdapters.IntegrationTests.csproj", "{07B3A4EA-33CC-4A2B-9BCA-3404AFBD82AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{03B1F770-441A-4155-B0A5-C4B5FE6E2800}"
 ProjectSection(SolutionItems) = preProject
@@ -10,6 +10,8 @@ ProjectSection(SolutionItems) = preProject
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basket.Tests", "Basket.Tests\Basket.Tests.csproj", "{0D2BCF54-9DDA-4688-BB47-D8DA2A3B3F33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basket.ServiceBusAdapters", "Basket.ServiceBusAdapters\Basket.ServiceBusAdapters.csproj", "{416C6238-82E3-4C71-BF46-44D6F90DA4BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,5 +31,9 @@ Global
 		{0D2BCF54-9DDA-4688-BB47-D8DA2A3B3F33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D2BCF54-9DDA-4688-BB47-D8DA2A3B3F33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D2BCF54-9DDA-4688-BB47-D8DA2A3B3F33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{416C6238-82E3-4C71-BF46-44D6F90DA4BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{416C6238-82E3-4C71-BF46-44D6F90DA4BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{416C6238-82E3-4C71-BF46-44D6F90DA4BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{416C6238-82E3-4C71-BF46-44D6F90DA4BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
