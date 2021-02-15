@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <PackageReference Include="Azure.Messaging.EventHubs" Version="5.3.0" />
+      <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.3.0" />
     </ItemGroup>
 
     <ItemGroup>
