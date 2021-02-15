@@ -28,14 +28,19 @@ namespace Basket.EventHubs.IntegrationTests
             var client = new EventHubProducerClient(config["Azure:EventHubs:ConnectionString"], "orders");
             await client.SendAsync(new []
             {
-                new EventData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Generator.NewOrder())))
+                new EventData(Encoding.UTF8.GetBytes("dummy")),
+                new EventData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(order))) { Properties = { ["event"] = "OrderCreated" }} 
             });
 
             var messages = new BlockingCollection<EventData>();
             var processor = new EventProcessorClient(new BlobContainerClient(config["Azure:EventHubs:StorageConnectionString"], "test"), EventHubConsumerClient.DefaultConsumerGroupName, config["Azure:EventHubs:ConnectionString"], "orders");
             processor.ProcessEventAsync += async e =>
             {
-                messages.Add(e.Data);
+                if ((string) e.Data.Properties["event"] == "OrderCreated")
+                {
+                    messages.Add(e.Data);
+                }
+                
                 await e.UpdateCheckpointAsync();
             };
 
