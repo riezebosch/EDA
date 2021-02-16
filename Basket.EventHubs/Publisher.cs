@@ -13,13 +13,15 @@ namespace Basket.EventHubs
 
         public Publisher(EventHubProducerClient client) => _client = client;
 
-        public async Task Publish(string @event, object body, DateTimeOffset schedule) =>
+        public async Task Publish(string @event, object body, DateTimeOffset schedule)
+        {
             await _client.SendAsync(new[]
             {
                 new EventData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(body)))
                 {
-                    Properties = { ["event"] = @event }
+                    Properties = {["event"] = @event}
                 }
             });
+        }
     }
 }

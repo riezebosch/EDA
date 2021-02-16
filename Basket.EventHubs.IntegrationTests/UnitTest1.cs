@@ -29,29 +29,25 @@ namespace Basket.EventHubs.IntegrationTests
             await using var client = new EventHubProducerClient(_config["Azure:EventHubs:ConnectionString"], "orders");
             var publisher = new Publisher(client);
             await publisher.Publish("CreateOrder", order, DateTimeOffset.UtcNow);
-            
-            var processor = new EventProcessorClient(
-                new BlobContainerClient(_config["Azure:EventHubs:StorageConnectionString"], "servicea"),
-                EventHubConsumerClient.DefaultConsumerGroupName, _config["Azure:EventHubs:ConnectionString"], "orders")
+
+            var blob = new BlobServiceClient(_config["Azure:EventHubs:StorageConnectionString"]);
+            await using var service = new EventProcessorClient(
+                    await blob.SetupStore("service-a"),
+                    EventHubConsumerClient.DefaultConsumerGroupName,
+                    _config["Azure:EventHubs:ConnectionString"],
+                    "orders")
                 .Hookup(new ServiceA(publisher), "CreateOrder");
-            await processor.StartProcessingAsync();
+            await service.Start();
 
-            var consumer = new TestHandler<OrderCreated>();
-            var test = new EventProcessorClient(
-                new BlobContainerClient(_config["Azure:EventHubs:StorageConnectionString"], "test"), 
-                EventHubConsumerClient.DefaultConsumerGroupName, _config["Azure:EventHubs:ConnectionString"], "orders")
-                .Hookup(consumer, "OrderCreated");
-            await test.StartProcessingAsync();
+            await using var test = new EventProcessorClient(
+                    await blob.SetupStore("test"),
+                    EventHubConsumerClient.DefaultConsumerGroupName,
+                    _config["Azure:EventHubs:ConnectionString"],
+                    "orders")
+                .Hookup<OrderCreated>("OrderCreated");
+            await test.Start();
 
-            try
-            {
-                consumer.Assert(x => x.Should().BeEquivalentTo(order));
-            }
-            finally
-            {
-                await processor.StopProcessingAsync();
-                await test.StopProcessingAsync();
-            }
+            test.Assert(x => x.Should().BeEquivalentTo(order));
         }
     }
 }

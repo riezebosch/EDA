@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Basket
 {
-    public sealed class TestHandler<T> : IHandle<T>, IDisposable
+    public sealed class TestHandler<T> : 
+        IHandle<T>, 
+        IAssert<T>,
+        IDisposable
     {
         private readonly BlockingCollection<T> _messages = new();
 
@@ -38,6 +41,6 @@ namespace Basket
             await Task.CompletedTask;
         }
 
-        void IDisposable.Dispose() => _messages.Dispose();
+        public void Dispose() => _messages.Dispose();
     }
 }
