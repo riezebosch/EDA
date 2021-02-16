@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Concurrent;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Producer;
 using Azure.Storage.Blobs;
 using Basket.Events;
+using Basket.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -16,40 +14,44 @@ namespace Basket.EventHubs.IntegrationTests
 {
     public class UnitTest1
     {
+        private readonly IConfigurationRoot _config;
+
+        public UnitTest1() =>
+            _config = new ConfigurationBuilder()
+                .AddUserSecrets<UnitTest1>()
+                .Build();
+
         [Fact]
         public async Task Test1()
         {
             var order = Generator.NewOrder();
 
-            var config = new ConfigurationBuilder()
-                .AddUserSecrets<UnitTest1>()
-                .Build();
-
-            var client = new EventHubProducerClient(config["Azure:EventHubs:ConnectionString"], "orders");
-            await client.SendAsync(new []
-            {
-                new EventData(Encoding.UTF8.GetBytes("dummy")),
-                new EventData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(order))) { Properties = { ["event"] = "OrderCreated" }} 
-            });
-
-            var messages = new BlockingCollection<EventData>();
-            var processor = new EventProcessorClient(new BlobContainerClient(config["Azure:EventHubs:StorageConnectionString"], "test"), EventHubConsumerClient.DefaultConsumerGroupName, config["Azure:EventHubs:ConnectionString"], "orders");
-            processor.ProcessEventAsync += async e =>
-            {
-                if ((string) e.Data.Properties["event"] == "OrderCreated")
-                {
-                    messages.Add(e.Data);
-                }
-                
-                await e.UpdateCheckpointAsync();
-            };
-
-            processor.ProcessErrorAsync += e => throw e.Exception;
+            await using var client = new EventHubProducerClient(_config["Azure:EventHubs:ConnectionString"], "orders");
+            var publisher = new Publisher(client);
+            await publisher.Publish("CreateOrder", order, DateTimeOffset.UtcNow);
+            
+            var processor = new EventProcessorClient(
+                new BlobContainerClient(_config["Azure:EventHubs:StorageConnectionString"], "servicea"),
+                EventHubConsumerClient.DefaultConsumerGroupName, _config["Azure:EventHubs:ConnectionString"], "orders")
+                .Hookup(new ServiceA(publisher), "CreateOrder");
             await processor.StartProcessingAsync();
 
-            messages.TryTake(out var result, TimeSpan.FromSeconds(30)).Should().BeTrue();
-            JsonSerializer.Deserialize<OrderCreated>(result!.EventBody).Should().BeEquivalentTo(order);
-            
+            var consumer = new TestHandler<OrderCreated>();
+            var test = new EventProcessorClient(
+                new BlobContainerClient(_config["Azure:EventHubs:StorageConnectionString"], "test"), 
+                EventHubConsumerClient.DefaultConsumerGroupName, _config["Azure:EventHubs:ConnectionString"], "orders")
+                .Hookup(consumer, "OrderCreated");
+            await test.StartProcessingAsync();
+
+            try
+            {
+                consumer.Assert(x => x.Should().BeEquivalentTo(order));
+            }
+            finally
+            {
+                await processor.StopProcessingAsync();
+                await test.StopProcessingAsync();
+            }
         }
     }
 }

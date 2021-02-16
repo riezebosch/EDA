@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
+using Basket.Events;
 using Basket.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -36,18 +36,15 @@ namespace Basket.ServiceBusAdapters.IntegrationTests
             await processor.StartProcessingAsync();
             
             await _admin.Setup("orders", "test", "OrderCreated");
-            await using var test = _bus.CreateProcessor("orders", "test");
 
-            using var results = new BlockingCollection<ServiceBusReceivedMessage>();
-
-            test.ProcessMessageAsync += async e => results.Add(e.Message);
-            test.ProcessErrorAsync += _ => Task.CompletedTask;
+            using var consumer = new TestHandler<OrderCreated>();
+            await using var test = _bus.CreateProcessor("orders", "test").Hookup(consumer);
             await test.StartProcessingAsync();
-            
-            await publisher.Publish( "CreateOrder", Generator.NewOrder(), DateTimeOffset.UtcNow);
 
-            results.TryTake(out var message, TimeSpan.FromMinutes(1)).Should().BeTrue();
-            message!.Subject.Should().Be("OrderCreated");
+            var order = Generator.NewOrder();
+            await publisher.Publish( "CreateOrder", order, DateTimeOffset.UtcNow);
+
+            consumer.Assert(x => x.Should().BeEquivalentTo(order), TimeSpan.FromSeconds(10));
         }
 
         public Task InitializeAsync() => Task.CompletedTask;
