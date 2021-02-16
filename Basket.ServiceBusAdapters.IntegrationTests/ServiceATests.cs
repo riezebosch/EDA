@@ -18,7 +18,7 @@ namespace Basket.ServiceBusAdapters.IntegrationTests
         public ServiceATests()
         {
             var config = new ConfigurationBuilder()
-                .AddUserSecrets<UnitTest1>()
+                .AddUserSecrets<ServiceATests>()
                 .Build();
 
             _bus = new ServiceBusClient(config["Azure:ServiceBus:ConnectionString"]);
@@ -32,23 +32,29 @@ namespace Basket.ServiceBusAdapters.IntegrationTests
             var publisher = new Publisher(sender); 
             
             await _admin.Setup("orders", "ServiceA", "CreateOrder");
-            await using var processor = _bus.CreateProcessor("orders", "ServiceA").Hookup(new ServiceA(publisher));
-            await processor.StartProcessingAsync();
+            await _bus
+                .CreateProcessor("orders", "ServiceA")
+                .Hookup(new ServiceA(publisher))
+                .StartProcessingAsync();
             
             await _admin.Setup("orders", "test", "OrderCreated");
 
-            using var consumer = new TestHandler<OrderCreated>();
-            await using var test = _bus.CreateProcessor("orders", "test").Hookup(consumer);
-            await test.StartProcessingAsync();
+            using var test = new TestHandler<OrderCreated>();
+            await _bus
+                .CreateProcessor("orders", "test")
+                .Hookup(test)
+                .StartProcessingAsync();
 
             var order = Generator.NewOrder();
             await publisher.Publish( "CreateOrder", order, DateTimeOffset.UtcNow);
 
-            consumer.Assert(x => x.Should().BeEquivalentTo(order), TimeSpan.FromSeconds(10));
+            test.Assert(x => x.Should().BeEquivalentTo(order), TimeSpan.FromSeconds(10));
         }
 
-        public Task InitializeAsync() => Task.CompletedTask;
+        public Task InitializeAsync() => 
+            Task.CompletedTask;
 
-        public async Task DisposeAsync() => await _bus.DisposeAsync();
+        public async Task DisposeAsync() => 
+            await _bus.DisposeAsync();
     }
 }

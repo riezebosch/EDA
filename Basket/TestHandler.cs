@@ -13,11 +13,11 @@ namespace Basket
         public void Assert(Action<T> assert, TimeSpan timeout)
         {
             var exceptions = new List<Exception>();
-            while (_messages.TryTake(out var result, timeout))
+            while (_messages.TryTake(out var message, timeout))
             {
                 try
                 {
-                    assert(result);
+                    assert(message);
                     return;
                 }
                 catch (Exception e)
