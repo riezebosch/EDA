@@ -1,0 +1,50 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using EDA.Ports;
+
+namespace EDA.TestAdapters
+{
+    public sealed class Subscriber<T> : 
+        ISubscribe<T>, 
+        IAssert<T>,
+        IDisposable
+    {
+        private readonly BlockingCollection<T> _messages = new();
+
+        public void Assert(Action<T> assert, TimeSpan timeout)
+        {
+            var exceptions = new List<Exception>();
+            while (_messages.TryTake(out var message, timeout))
+            {
+                try
+                {
+                    assert(message);
+                    return;
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+
+            throw exceptions.Any() 
+                ? new AggregateException(exceptions) 
+                : new TimeoutException();
+        }
+
+        public void Assert(Action<T> assert) => 
+            Assert(assert, TimeSpan.FromSeconds(60));
+
+        Task ISubscribe<T>.Handle(T body)
+        {
+            _messages.Add(body);
+            return Task.CompletedTask;
+        }
+
+        public void Dispose() => 
+            _messages.Dispose();
+    }
+}
