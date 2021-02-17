@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Basket
+namespace Basket.TestAdapters
 {
     public sealed class TestHandler<T> : 
         IHandle<T>, 
@@ -29,18 +29,21 @@ namespace Basket
                 }
             }
 
-            throw exceptions.Any() ? new AggregateException(exceptions) : new TimeoutException();
+            throw exceptions.Any() 
+                ? new AggregateException(exceptions) 
+                : new TimeoutException();
         }
 
         public void Assert(Action<T> assert) => 
             Assert(assert, TimeSpan.FromSeconds(60));
 
-        async Task IHandle<T>.Handle(T body)
+        Task IHandle<T>.Handle(T body)
         {
             _messages.Add(body);
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
-        public void Dispose() => _messages.Dispose();
+        public void Dispose() => 
+            _messages.Dispose();
     }
 }

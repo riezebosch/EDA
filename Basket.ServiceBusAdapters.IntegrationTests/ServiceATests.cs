@@ -4,6 +4,7 @@ using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Basket.Events;
 using Basket.Services;
+using Basket.TestAdapters;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;

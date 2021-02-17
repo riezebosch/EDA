@@ -4,7 +4,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Basket.Tests
+namespace Basket.TestAdapters.Tests
 {
     public class TestHandlerTests
     {

@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Basket.TestAdapters\Basket.TestAdapters.csproj" />
       <ProjectReference Include="..\Basket\Basket.csproj" />
     </ItemGroup>
 

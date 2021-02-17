@@ -1,6 +1,6 @@
 using System;
 
-namespace Basket
+namespace Basket.TestAdapters
 {
     public interface IAssert<out T>
     {

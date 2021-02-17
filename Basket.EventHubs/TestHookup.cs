@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
+using Basket.TestAdapters;
 
 namespace Basket.EventHubs
 {

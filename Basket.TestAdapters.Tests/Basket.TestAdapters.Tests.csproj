@@ -1,15 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <LangVersion>LATEST</LangVersion>
         <IsPackable>false</IsPackable>
-        <UserSecretsId>e3c70d3d-77e2-4025-8fee-f78134c761e7</UserSecretsId>
-  </PropertyGroup>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="5.10.3" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
         <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -23,11 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Basket.ServiceBusAdapters\Basket.ServiceBusAdapters.csproj" />
       <ProjectReference Include="..\Basket.TestAdapters\Basket.TestAdapters.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="README.md" />
-    </ItemGroup>
 </Project>
