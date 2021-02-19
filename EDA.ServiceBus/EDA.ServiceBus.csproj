@@ -2,11 +2,15 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.0.1" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\EDA.Ports\EDA.Ports.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="README.md" />
     </ItemGroup>
 </Project>

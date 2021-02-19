@@ -13,13 +13,7 @@ namespace EDA.ServiceBus
         public Publisher(ServiceBusSender sender) => 
             _sender = sender;
 
-        public async Task Publish(string @event, object body, DateTimeOffset schedule)
-        {
-            await _sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(body))
-            {
-                Subject = @event, 
-                ScheduledEnqueueTime = schedule
-            });
-        }
+        public Task Publish(string @event, object body, DateTimeOffset schedule) => 
+            _sender.SendMessageAsync(body.ToEvent(@event, schedule));
     }
 }

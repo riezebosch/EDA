@@ -7,13 +7,13 @@ using EDA.Ports;
 
 namespace EDA.EventHubs
 {
-    internal class Hookup<T> : IHookup
+    internal class Processor<T> : IProcessor
     {
         private readonly EventProcessorClient _processor;
         private readonly ISubscribe<T> _handler;
         private readonly string _event;
 
-        public Hookup(EventProcessorClient processor, ISubscribe<T> handler, string @event)
+        public Processor(EventProcessorClient processor, ISubscribe<T> handler, string @event)
         {
             _processor = processor;
             _handler = handler;
@@ -35,11 +35,14 @@ namespace EDA.EventHubs
         {
             if ((string) e.Data.Properties["event"] == _event)
             {
-                await _handler.Handle(JsonSerializer.Deserialize<T>(e.Data.EventBody));
+                await _handler.Handle(e.Data.FromEvent<T>());
             }
 
             await e.UpdateCheckpointAsync();
         }
+        
+        private static Task Handle(ProcessErrorEventArgs e) =>
+            throw e.Exception;
         
         private async Task Stop()
         {
@@ -53,8 +56,5 @@ namespace EDA.EventHubs
                 _processor.ProcessErrorAsync -= Handle;
             }
         }
-
-        private static Task Handle(ProcessErrorEventArgs e) =>
-            throw e.Exception;
     }
 }

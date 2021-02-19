@@ -14,4 +14,8 @@
       <ProjectReference Include="..\EDA.TestAdapters\EDA.TestAdapters.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="README.md" />
+    </ItemGroup>
+
 </Project>

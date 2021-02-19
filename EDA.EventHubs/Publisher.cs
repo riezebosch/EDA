@@ -12,17 +12,10 @@ namespace EDA.EventHubs
     {
         private readonly EventHubProducerClient _client;
 
-        public Publisher(EventHubProducerClient client) => _client = client;
+        public Publisher(EventHubProducerClient client) => 
+            _client = client;
 
-        public async Task Publish(string @event, object body, DateTimeOffset schedule)
-        {
-            await _client.SendAsync(new[]
-            {
-                new EventData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(body)))
-                {
-                    Properties = {["event"] = @event}
-                }
-            });
-        }
+        public Task Publish(string @event, object body, DateTimeOffset schedule) =>
+            _client.SendAsync(new[] { body.ToEvent(@event) });
     }
 }

@@ -33,19 +33,19 @@ namespace EDA.EventHubs.IntegrationTests
 
             var blob = new BlobServiceClient(_config["Azure:EventHubs:StorageConnectionString"]);
             await using var service = new EventProcessorClient(
-                    await blob.SetupStore("service-a"),
+                    await blob.StoreFor("service-a"),
                     EventHubConsumerClient.DefaultConsumerGroupName,
                     _config["Azure:EventHubs:ConnectionString"],
                     "orders")
-                .Hookup(new ServiceA(publisher), "CreateOrder");
+                .AttachTo(new ServiceA(publisher), "CreateOrder");
             await service.Start();
 
             await using var test = new EventProcessorClient(
-                    await blob.SetupStore("test"),
+                    await blob.StoreFor("test"),
                     EventHubConsumerClient.DefaultConsumerGroupName,
                     _config["Azure:EventHubs:ConnectionString"],
                     "orders")
-                .Hookup<OrderCreated>("OrderCreated");
+                .AttachTo<OrderCreated>("OrderCreated");
             await test.Start();
 
             test.Assert(x => x.Should().BeEquivalentTo(order));

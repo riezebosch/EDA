@@ -5,20 +5,20 @@ using EDA.TestAdapters;
 
 namespace EDA.EventHubs
 {
-    internal class TestHookup<T> : ITestHookup<T>
+    internal class TestProcessor<T> : ITestProcessor<T>
     {
-        private readonly IHookup _hookup;
+        private readonly IProcessor _processor;
         private readonly Subscriber<T> _subscriber = new();
 
-        public TestHookup(EventProcessorClient processor, string @event) =>
-            _hookup = new Hookup<T>(processor, _subscriber, @event);
+        public TestProcessor(EventProcessorClient processor, string @event) =>
+            _processor = new Processor<T>(processor, _subscriber, @event);
 
         public async Task Start() => 
-            await _hookup.Start();
+            await _processor.Start();
 
         public async ValueTask DisposeAsync()
         {
-            await _hookup.DisposeAsync();
+            await _processor.DisposeAsync();
             _subscriber.Dispose();
         }
 
