@@ -1,10 +1,11 @@
 using System;
+using System.Threading.Tasks;
 
 namespace EDA.TestAdapters
 {
     public interface IAssert<out T>
     {
-        void Assert(Action<T> assert, TimeSpan timeout);
-        void Assert(Action<T> assert);
+        Task Assert(Action<T> assert, TimeSpan timeout);
+        Task Assert(Action<T> assert);
     }
 }

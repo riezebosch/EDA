@@ -15,16 +15,35 @@ namespace EDA.TestAdapters.Tests
             var handler = new Subscriber<string>();
             await handler.As<ISubscribe<string>>().Handle("input");
             
-            handler.Assert(x => x.Should().Be("input"), TimeSpan.Zero);
+            await handler.Assert(x => x.Should().Be("input"), TimeSpan.FromSeconds(1));
         }
         
         [Fact]
         public void Timeout()
         {
             var handler = new Subscriber<string>();
-            handler.Invoking(x => x.Assert(y => y.Should().Be("input"), TimeSpan.Zero))
+            handler.Invoking(x => x.Assert(y => y.Should().Be("input"), TimeSpan.FromSeconds(1)))
                 .Should()
                 .Throw<TimeoutException>();
+        }
+        
+        [Fact]
+        public async Task ResetTimeoutOnMessageArrival()
+        {
+            var handler = new Subscriber<string>();
+            async Task Emit()
+            {
+                var subscriber = handler.As<ISubscribe<string>>();
+                for (var i = 0; i < 5; i++)
+                {
+                    await subscriber.Handle($"a{i}");
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+
+                await subscriber.Handle("input");
+            }
+
+            await Task.WhenAll(Emit(), handler.Assert(y => y.Should().Be("input"), TimeSpan.FromSeconds(2)));
         }
         
         [Fact]
@@ -33,7 +52,7 @@ namespace EDA.TestAdapters.Tests
             var handler = new Subscriber<string>();
             await handler.As<ISubscribe<string>>().Handle("other");
             
-            handler.Invoking(x => x.Assert(y => y.Should().Be("input"), TimeSpan.Zero))
+            handler.Invoking(x => x.Assert(y => y.Should().Be("input"), TimeSpan.FromSeconds(1)))
                 .Should()
                 .Throw<XunitException>();
         }
@@ -45,7 +64,7 @@ namespace EDA.TestAdapters.Tests
             await handler.As<ISubscribe<string>>().Handle("other");
             await handler.As<ISubscribe<string>>().Handle("different");
             
-            handler.Invoking(x => x.Assert(y => y.Should().Be("input"), TimeSpan.Zero))
+            handler.Invoking(x => x.Assert(y => y.Should().Be("input"), TimeSpan.FromSeconds(1)))
                 .Should()
                 .Throw<AggregateException>()
                 .Which
@@ -62,7 +81,7 @@ namespace EDA.TestAdapters.Tests
             await handler.As<ISubscribe<string>>().Handle("first");
             await handler.As<ISubscribe<string>>().Handle("then");
 
-            handler.Assert(y => y.Should().Be("then"), TimeSpan.Zero);
+            await handler.Assert(y => y.Should().Be("then"), TimeSpan.FromSeconds(1));
         }
     }
 }

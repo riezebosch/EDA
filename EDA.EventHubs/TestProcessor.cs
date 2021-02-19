@@ -16,16 +16,13 @@ namespace EDA.EventHubs
         public async Task Start() => 
             await _processor.Start();
 
-        public async ValueTask DisposeAsync()
-        {
-            await _processor.DisposeAsync();
-            _subscriber.Dispose();
-        }
+        public ValueTask DisposeAsync() => 
+            _processor.DisposeAsync();
 
-        public void Assert(Action<T> assert, TimeSpan timeout) => 
+        public Task Assert(Action<T> assert, TimeSpan timeout) => 
             _subscriber.Assert(assert, timeout);
 
-        public void Assert(Action<T> assert) => 
+        public Task Assert(Action<T> assert) => 
             _subscriber.Assert(assert);
     }
 }

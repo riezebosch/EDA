@@ -1,7 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using EDA.Ports;
 
@@ -9,42 +10,46 @@ namespace EDA.TestAdapters
 {
     public sealed class Subscriber<T> : 
         ISubscribe<T>, 
-        IAssert<T>,
-        IDisposable
+        IAssert<T>
     {
-        private readonly BlockingCollection<T> _messages = new();
+        private readonly Channel<T> _messages = Channel.CreateUnbounded<T>();
 
-        public void Assert(Action<T> assert, TimeSpan timeout)
+        public async Task Assert(Action<T> assert, TimeSpan timeout)
         {
             var exceptions = new List<Exception>();
-            while (_messages.TryTake(out var message, timeout))
+
+            try
             {
-                try
+                using var source = new CancellationTokenSource();
+                source.CancelAfter(timeout);
+
+                await foreach (var message in _messages.Reader.ReadAllAsync(source.Token))
                 {
-                    assert(message);
-                    return;
-                }
-                catch (Exception e)
-                {
-                    exceptions.Add(e);
+                    try
+                    {
+                        assert(message);
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
+
+                    source.CancelAfter(timeout);
                 }
             }
-
-            throw exceptions.Any() 
-                ? new AggregateException(exceptions) 
-                : new TimeoutException();
+            catch (OperationCanceledException)
+            {
+                throw exceptions.Any() 
+                    ? new AggregateException(exceptions) 
+                    : new TimeoutException();
+            }
         }
 
-        public void Assert(Action<T> assert) => 
+        public Task Assert(Action<T> assert) => 
             Assert(assert, TimeSpan.FromSeconds(60));
 
-        Task ISubscribe<T>.Handle(T body)
-        {
-            _messages.Add(body);
-            return Task.CompletedTask;
-        }
-
-        public void Dispose() => 
-            _messages.Dispose();
+        async Task ISubscribe<T>.Handle(T body) => 
+            await _messages.Writer.WriteAsync(body);
     }
 }

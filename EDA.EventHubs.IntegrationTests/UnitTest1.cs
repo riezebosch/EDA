@@ -48,7 +48,7 @@ namespace EDA.EventHubs.IntegrationTests
                 .AttachTo<OrderCreated>("OrderCreated");
             await test.Start();
 
-            test.Assert(x => x.Should().BeEquivalentTo(order));
+            await test.Assert(x => x.Should().BeEquivalentTo(order));
         }
     }
 }

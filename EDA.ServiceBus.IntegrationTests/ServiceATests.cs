@@ -41,7 +41,7 @@ namespace EDA.ServiceBus.IntegrationTests
             
             await _admin.Setup("orders", "test", "OrderCreated");
 
-            using var test = new Subscriber<OrderCreated>();
+            var test = new Subscriber<OrderCreated>();
             await _bus
                 .CreateProcessor("orders", "test")
                 .Hookup(test)
@@ -50,7 +50,7 @@ namespace EDA.ServiceBus.IntegrationTests
             var order = Generator.NewOrder();
             await publisher.Publish( "CreateOrder", order, DateTimeOffset.UtcNow);
 
-            test.Assert(x => x.Should().BeEquivalentTo(order), TimeSpan.FromSeconds(10));
+            await test.Assert(x => x.Should().BeEquivalentTo(order), TimeSpan.FromSeconds(10));
         }
 
         public Task InitializeAsync() => 
