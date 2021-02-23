@@ -49,7 +49,7 @@ namespace EDA.TestAdapters
         public Task Assert(Action<T> assert) => 
             Assert(assert, TimeSpan.FromSeconds(60));
 
-        async Task ISubscribe<T>.Handle(T body) => 
+        public async Task Handle(T body) => 
             await _messages.Writer.WriteAsync(body);
     }
 }
